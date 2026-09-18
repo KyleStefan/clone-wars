@@ -10,14 +10,14 @@
     return audio;
   }
 
-  function tone(context, start, duration, from, to, gainAmount, type) {
+  function tone(context, start, duration, from, to, type, level) {
     const oscillator = context.createOscillator();
     const gain = context.createGain();
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(from, start);
-    oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, to), start + duration);
+    oscillator.frequency.exponentialRampToValueAtTime(to, start + duration);
     gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(gainAmount, start + 0.01);
+    gain.gain.exponentialRampToValueAtTime(level, start + 0.01);
     gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     oscillator.connect(gain);
     gain.connect(context.destination);
@@ -30,26 +30,42 @@
       try {
         const context = getAudio();
         if (!context) return;
-        const now = context.currentTime;
-        tone(context, now, 0.12, 920, 1500, 0.12, 'square');
+        const start = context.currentTime;
+        tone(context, start, 0.12, 980, 180, 'square', 0.12);
       } catch (error) {}
     },
+
     score: function () {
       try {
         const context = getAudio();
         if (!context) return;
-        const now = context.currentTime;
-        tone(context, now, 0.11, 660, 990, 0.1, 'sine');
-        tone(context, now + 0.08, 0.16, 990, 1480, 0.1, 'sine');
+        const start = context.currentTime;
+        tone(context, start, 0.28, 150, 920, 'sine', 0.14);
+        tone(context, start + 0.03, 0.22, 280, 1320, 'triangle', 0.1);
       } catch (error) {}
     },
+
     crash: function () {
       try {
         const context = getAudio();
         if (!context) return;
-        const now = context.currentTime;
-        tone(context, now, 0.28, 240, 55, 0.16, 'sawtooth');
-        tone(context, now, 0.2, 120, 48, 0.08, 'square');
+        const start = context.currentTime;
+        tone(context, start, 0.34, 180, 48, 'sawtooth', 0.18);
+
+        const buffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.24), context.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let index = 0; index < data.length; index += 1) {
+          data[index] = (Math.random() * 2 - 1) * (1 - index / data.length);
+        }
+        const noise = context.createBufferSource();
+        const gain = context.createGain();
+        noise.buffer = buffer;
+        gain.gain.setValueAtTime(0.16, start);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.24);
+        noise.connect(gain);
+        gain.connect(context.destination);
+        noise.start(start);
+        noise.stop(start + 0.24);
       } catch (error) {}
     }
   };
