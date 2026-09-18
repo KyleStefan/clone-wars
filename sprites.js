@@ -1,169 +1,113 @@
 (function () {
-  window.SPRITES = {
-    drawBackground: function (ctx, width, height, time) {
-      ctx.save();
+  function drawBackground(ctx, width, height, time) {
+    ctx.save();
+    const sky = ctx.createLinearGradient(0, 0, 0, height);
+    sky.addColorStop(0, '#07133d');
+    sky.addColorStop(0.55, '#17206b');
+    sky.addColorStop(1, '#3c176d');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, width, height);
 
-      const sky = ctx.createLinearGradient(0, 0, 0, height);
-      sky.addColorStop(0, '#5b2b63');
-      sky.addColorStop(0.48, '#d96b58');
-      sky.addColorStop(1, '#f4b05f');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, width, height);
-
-      const drift = (time || 0) * 2;
-      function sun(cx, cy, radius, color) {
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.fillStyle = color;
-        ctx.fill();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = '#3b203e';
-        ctx.stroke();
-      }
-      sun(width * 0.28, height * 0.22, Math.min(width, height) * 0.075, '#ffe58a');
-      sun(width * 0.74, height * 0.29, Math.min(width, height) * 0.055, '#ffd16d');
-
-      ctx.fillStyle = 'rgba(73, 35, 69, 0.48)';
+    const stars = [
+      [22, 52, 2], [64, 126, 1.5], [112, 42, 1.5], [151, 96, 2],
+      [199, 34, 1.5], [247, 118, 2], [296, 62, 1.5], [337, 154, 2],
+      [42, 230, 1.5], [142, 188, 1], [236, 215, 1.5], [315, 260, 1]
+    ];
+    const twinkle = Math.sin(time * 3) * 0.2;
+    ctx.fillStyle = '#d8f7ff';
+    for (const star of stars) {
+      const radius = Math.max(0.7, star[2] + twinkle * (star[0] % 3));
       ctx.beginPath();
-      ctx.moveTo(0, height * 0.64);
-      ctx.lineTo(width * 0.13, height * 0.55);
-      ctx.lineTo(width * 0.25, height * 0.63);
-      ctx.lineTo(width * 0.4, height * 0.51);
-      ctx.lineTo(width * 0.58, height * 0.64);
-      ctx.lineTo(width * 0.77, height * 0.54);
-      ctx.lineTo(width, height * 0.62);
-      ctx.lineTo(width, height);
-      ctx.lineTo(0, height);
-      ctx.closePath();
+      ctx.arc(star[0], star[1], radius, 0, Math.PI * 2);
       ctx.fill();
-
-      ctx.fillStyle = 'rgba(255, 190, 104, 0.28)';
-      for (let i = -1; i < 7; i += 1) {
-        const x = i * 76 - (drift % 76);
-        ctx.beginPath();
-        ctx.moveTo(x, height * 0.72);
-        ctx.lineTo(x + 42, height * 0.66);
-        ctx.lineTo(x + 87, height * 0.72);
-        ctx.lineTo(x + 48, height * 0.75);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-      ctx.restore();
-    },
-
-    drawGround: function (ctx, width, height, groundHeight, offset) {
-      ctx.save();
-      const top = height - groundHeight;
-      ctx.fillStyle = '#b9643f';
-      ctx.fillRect(0, top, width, groundHeight);
-
-      ctx.fillStyle = '#e3944f';
-      ctx.fillRect(0, top, width, 7);
-      ctx.strokeStyle = '#3b203e';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(0, top + 1, width, groundHeight - 1);
-
-      const tile = 34;
-      const slide = ((offset || 0) % tile + tile) % tile;
-      ctx.strokeStyle = 'rgba(59, 32, 62, 0.42)';
-      ctx.lineWidth = 2;
-      for (let x = -tile - slide; x < width + tile; x += tile) {
-        ctx.beginPath();
-        ctx.moveTo(x, top + 10);
-        ctx.lineTo(x + tile * 0.5, height);
-        ctx.stroke();
-      }
-      ctx.restore();
-    },
-
-    drawBird: function (ctx, x, y, size, velocity) {
-      ctx.save();
-      ctx.translate(x, y);
-      const tilt = Math.max(-0.28, Math.min(0.38, (velocity || 0) / 900));
-      ctx.rotate(tilt);
-      const s = size / 34;
-
-      ctx.lineJoin = 'round';
-      ctx.lineCap = 'round';
-      ctx.fillStyle = '#d9e5e8';
-      ctx.strokeStyle = '#1d1a2b';
-      ctx.lineWidth = Math.max(2, 2.5 * s);
-
-      ctx.beginPath();
-      ctx.moveTo(-15 * s, 3 * s);
-      ctx.lineTo(-7 * s, -10 * s);
-      ctx.lineTo(8 * s, -12 * s);
-      ctx.lineTo(16 * s, -4 * s);
-      ctx.lineTo(10 * s, 8 * s);
-      ctx.lineTo(-5 * s, 11 * s);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#45a7b5';
-      ctx.beginPath();
-      ctx.moveTo(-8 * s, 2 * s);
-      ctx.lineTo(-18 * s, 9 * s);
-      ctx.lineTo(-4 * s, 8 * s);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#ee7e4d';
-      ctx.beginPath();
-      ctx.moveTo(13 * s, -3 * s);
-      ctx.lineTo(20 * s, 0);
-      ctx.lineTo(13 * s, 3 * s);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = '#69d5df';
-      ctx.beginPath();
-      ctx.arc(4 * s, -5 * s, 4 * s, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
-    },
-
-    drawPipe: function (ctx, x, gapTop, gapBottom, pipeWidth, height) {
-      ctx.save();
-      const cap = Math.min(10, pipeWidth * 0.18);
-      const edge = '#241c35';
-      const beam = '#5be0e1';
-      const glow = '#c5ffff';
-
-      function gate(y, gateHeight) {
-        if (gateHeight <= 0) return;
-        ctx.fillStyle = '#286b91';
-        ctx.fillRect(x, y, pipeWidth, gateHeight);
-        ctx.fillStyle = 'rgba(91, 224, 225, 0.32)';
-        ctx.fillRect(x + pipeWidth * 0.16, y, pipeWidth * 0.2, gateHeight);
-        ctx.strokeStyle = edge;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(x + 1.5, y + 1.5, pipeWidth - 3, gateHeight - 3);
-      }
-
-      gate(0, gapTop);
-      gate(gapBottom, height - gapBottom);
-
-      ctx.fillStyle = beam;
-      ctx.strokeStyle = edge;
-      ctx.lineWidth = 3;
-      if (gapTop > 0) {
-        ctx.fillRect(x - cap, gapTop - 8, pipeWidth + cap * 2, 8);
-        ctx.strokeRect(x - cap + 1.5, gapTop - 8 + 1.5, pipeWidth + cap * 2 - 3, 5);
-      }
-      if (gapBottom < height) {
-        ctx.fillRect(x - cap, gapBottom, pipeWidth + cap * 2, 8);
-        ctx.strokeRect(x - cap + 1.5, gapBottom + 1.5, pipeWidth + cap * 2 - 3, 5);
-      }
-
-      ctx.fillStyle = glow;
-      ctx.fillRect(x + pipeWidth * 0.18, gapTop - 5, pipeWidth * 0.64, 2);
-      ctx.fillRect(x + pipeWidth * 0.18, gapBottom + 3, pipeWidth * 0.64, 2);
-      ctx.restore();
     }
-  };
+
+    ctx.strokeStyle = 'rgba(79, 238, 255, 0.18)';
+    ctx.lineWidth = 1;
+    for (let y = height * 0.58; y < height; y += 34) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawGround(ctx, width, height, groundHeight, offset) {
+    ctx.save();
+    const top = height - groundHeight;
+    ctx.fillStyle = '#100d32';
+    ctx.fillRect(0, top, width, groundHeight);
+    ctx.fillStyle = '#22e6ff';
+    ctx.fillRect(0, top, width, 4);
+    ctx.strokeStyle = '#6b43ff';
+    ctx.lineWidth = 2;
+    const step = 32;
+    const shift = -(offset % step);
+    for (let x = shift; x < width + step; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, top + 5);
+      ctx.lineTo(x + step * 0.55, height);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawBird(ctx, x, y, size, velocity) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.max(-0.35, Math.min(0.55, velocity / 900)));
+    const half = size / 2;
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = Math.max(2, size * 0.08);
+    ctx.strokeStyle = '#080b25';
+    ctx.fillStyle = '#ff5edb';
+    ctx.beginPath();
+    ctx.moveTo(-half * 0.95, 0);
+    ctx.lineTo(-half * 0.2, -half * 0.62);
+    ctx.lineTo(half * 0.92, -half * 0.34);
+    ctx.lineTo(half, half * 0.35);
+    ctx.lineTo(-half * 0.3, half * 0.62);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#62f5ff';
+    ctx.beginPath();
+    ctx.moveTo(-half * 0.85, half * 0.04);
+    ctx.lineTo(-half * 1.18, half * 0.3);
+    ctx.lineTo(-half * 0.65, half * 0.34);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#f8ffff';
+    ctx.beginPath();
+    ctx.arc(half * 0.42, -half * 0.16, Math.max(2, size * 0.1), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPipe(ctx, x, gapTop, gapBottom, pipeWidth, height) {
+    ctx.save();
+    const beam = Math.max(4, pipeWidth * 0.12);
+    ctx.lineWidth = Math.max(2, pipeWidth * 0.06);
+    ctx.strokeStyle = '#090b2b';
+    ctx.fillStyle = '#ff3fd4';
+    ctx.fillRect(x, 0, pipeWidth, gapTop);
+    ctx.strokeRect(x, 0, pipeWidth, gapTop);
+    ctx.fillRect(x, gapBottom, pipeWidth, height - gapBottom);
+    ctx.strokeRect(x, gapBottom, pipeWidth, height - gapBottom);
+    ctx.fillStyle = '#67f7ff';
+    ctx.fillRect(x + beam, 0, pipeWidth - beam * 2, Math.max(0, gapTop - 6));
+    ctx.fillRect(x + beam, gapBottom + 6, pipeWidth - beam * 2, Math.max(0, height - gapBottom - 6));
+    ctx.fillStyle = '#fff06a';
+    ctx.fillRect(x - beam * 0.8, gapTop - beam, pipeWidth + beam * 1.6, beam);
+    ctx.fillRect(x - beam * 0.8, gapBottom, pipeWidth + beam * 1.6, beam);
+    ctx.strokeStyle = '#090b2b';
+    ctx.strokeRect(x - beam * 0.8, gapTop - beam, pipeWidth + beam * 1.6, beam);
+    ctx.strokeRect(x - beam * 0.8, gapBottom, pipeWidth + beam * 1.6, beam);
+    ctx.restore();
+  }
+
+  window.SPRITES = { drawBackground, drawGround, drawBird, drawPipe };
 })();
